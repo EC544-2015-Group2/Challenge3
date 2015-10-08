@@ -1,17 +1,51 @@
-var http = require('http');
+var http = require('http'),
+firmata = require('firmata'),
+xbee_api = require('xbee-api'),
+serialPort = require('serialport'),
+XbeeApiStream = require('./XbeeApiStream.js');
 
 const PORT = 80;
 
-function handleRequest(request, response) {
+xbeeAPI = new xbee_api.XBeeAPI({
+	api_mode: 2
+});
+
+var serialOptions = {
+	baudrate: 9600,
+	parser: xbeeAPI.rawParser()
+};
+
+var deviceList = [];
+
+Serial = new serialPort.SerialPort(process.argv[2], serialOptions, true, function() {
+	console.log('Opened serial port');
+	Serial.flush();
+
+	xbeeAPI.on('frame_object', function(frame) {
+		if (frame.type === xbee_api.constants.FRAME_TYPE.NODE_IDENTIFICATION)
+			deviceList.push(frame.remote64);
+	});
+	var server = http.createServer(httpRequestHandler);
+
+	server.listen(PORT, function(){
+		console.log("Server listening on: http://localhost:%s", PORT);
+	});
+
+})
+
+
+
+function httpRequestHandler(request, response) {
 	console.log(request);
 	if (request.method === 'GET'){
 		var url = request.url.split('/').slice(1);
 		if(url.length > 0) {
 			if (url[0] === 'device') {
 				if (url.length > 1){
-					if (deviceID.filter(function (element){
+					if (deviceList.filter(function (element){
 						return element === url[1];
 					}).length > 0) {
+						var xbeeStream = XbeeApiStream(url[1], Serial, xbeeAPI);
 						if (url[2] === 'pin') {
 							if (pinID.filter(function (element){
 								return element === url [3];
@@ -19,7 +53,7 @@ function handleRequest(request, response) {
 								response.end() // send device ID, pin ID
 							}
 						} else {
-							response.end() // send device ID
+							response.end() // send device ID, pins
 						}
 					} else {
 						response.end() // send error in device ID request
@@ -34,7 +68,7 @@ function handleRequest(request, response) {
 			response.end() // send error in url received
 		}
 	} else if (request.method === 'POST'){
-		var url = request.url.split('/');
+		var url = request.url.split('/').slice(1);
 		// var pos = LEDCommandIndex();
 		if(url.length === 5) {
 			if (url[0] === 'device') {
@@ -68,11 +102,7 @@ function handleRequest(request, response) {
 	}
 }
 
-var server = http.createServer(handleRequest);
 
-server.listen(PORT, function(){
-	console.log("Server listening on: http://localhost:%s", PORT);
-});
 
 // function LEDCommandIndex(){
 // 			if (url.indexOf('HIGH') !== -1) {
