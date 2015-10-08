@@ -1,13 +1,14 @@
 var http = require('http');
 
-const PORT = 8080;
+const PORT = 80;
 
 function handleRequest(request, response) {
+	console.log(request);
 	if (request.method === 'GET'){
-		var url = request.url.split('/');
+		var url = request.url.split('/').slice(1);
 		if(url.length > 0) {
 			if (url[0] === 'device') {
-				if (url[1].length > 1){
+				if (url.length > 1){
 					if (deviceID.filter(function (element){
 						return element === url[1];
 					}).length > 0) {
@@ -24,7 +25,7 @@ function handleRequest(request, response) {
 						response.end() // send error in device ID request
 					}
 				} else {
-					response.end() // send array of devices and IDs 
+					response.end('list of devices','utf8'); // send array of devices and IDs 
 				}
 			} else {
 				response.end() // send error in request
