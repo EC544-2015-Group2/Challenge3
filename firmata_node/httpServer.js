@@ -71,17 +71,23 @@ function httpRequestHandler(request, response) {
                     if (url[2] === 'pin') {
                         if (pinID.filter(function(element) {
                                 return element === url[3];
+                                var xbeeStream = XbeeApiStream(url[1], Serial, xbeeAPI);
+                                var arduino = new firmata.Board(xbeeStream, function() {
+                                    console.log('Accessed board pins, attempting to write...')
+                                })
                             }).length > 0) {
                             if (url[5] === 'HIGH') {
-                                // set url[4] to HIGH
+                                arduino.digitalWrite(url[3], 'HIGH');
+                                console.log('set pin ' + url[3] + 'to HIGH');
                             } else if (url[5] === 'LOW') {
-                                // set url[4] to LOW
-                            }
-                        } else response.end() // send error in request
-                    } else response.end() // send error in request
-                } else response.end() // send error in request
-            } else response.end() // send error in request
-        } else response.end() // send error in request
+                                arduino.digitalWrite(url[3], 'LOW');
+                                console.log('set pin ' + url[3] + 'to LOW');
+                            } else response.end('Error: Please specify HIGH or LOW')
+                        } else response.end('Error: url should be of format /device/deviceID/pin/pinID/HIGH or LOW') // send error in request
+                    } else response.end('Error: url should be of format /device/deviceID/pin/pinID/HIGH or LOW') // send error in request
+                } else response.end('Error: url should be of format /device/deviceID/pin/pinID/HIGH or LOW') // send error in request
+            } else response.end('Error: url should be of format /device/deviceID/pin/pinID/HIGH or LOW') // send error in request
+        } else response.end('Error: url should be of format /device/deviceID/pin/pinID/HIGH or LOW') // send error in request
     }
 }
 
