@@ -50,22 +50,22 @@ function httpRequestHandler(request, response) {
 							if (pinID.filter(function (element){
 								return element === url [3];
 							}).length > 0) {
-								response.end() // send device ID, pin ID
+								response.end('XXXXXpin ID') // send device ID, pin ID
 							}
 						} else {
-							response.end() // send device ID, pins
+							response.end('XXXXXlist of pins') // send device ID, pins
 						}
 					} else {
-						response.end() // send error in device ID request
+						response.end('Error: No device found with that ID') // send error in device ID request
 					}
 				} else {
-					response.end('list of devices','utf8'); // send array of devices and IDs 
+					response.end('XXXXXlist of devices','utf8'); // send array of devices and IDs 
 				}
 			} else {
-				response.end() // send error in request
+				response.end('error in request, must request in the format /device/deviceID/pin/pinID') // send error in request
 			}
 		} else { 
-			response.end() // send error in url received
+			response.end('error in url') // send error in url received
 		}
 	} else if (request.method === 'POST'){
 		var url = request.url.split('/').slice(1);
