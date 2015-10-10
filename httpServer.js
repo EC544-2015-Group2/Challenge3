@@ -46,7 +46,7 @@ function httpRequestHandler(request, response) {
 						return element === url[1];
 					}).length > 0) {
 						var xbeeStream = XbeeApiStream(url[1], Serial, xbeeAPI);
-						var arduino = new firmata.Board(new XbeeApiStream(frame.remote64, Serial, xbeeAPI), function() {
+						var arduino = new firmata.Board(xbeeStream, function() {
 							console.log(arduino.pins);
 						if (url[2] === 'pin') {
 							if (pinID.filter(function (element){
@@ -55,7 +55,7 @@ function httpRequestHandler(request, response) {
 								response.end(JSON.Stringify('XXXXXpin ID')) // send device ID, pin ID
 							}
 						} else {
-							response.end('XXXXXlist of pins') // send device ID, pins
+							response.end(JSON.Stringify(arduino.pins)) // send device ID, pins
 						}
 					} else {
 						response.end('Error: No device found with that ID') // send error in device ID request
