@@ -47,74 +47,52 @@ function httpRequestHandler(request, response) {
                         }).length > 0) {
                         var xbeeStream = XbeeApiStream(url[1], Serial, xbeeAPI);
                         var arduino = new firmata.Board(xbeeStream, function() {
-                                console.log(arduino.pins);
-                            }
-                            if (url[2] === 'pin') {
-                                if (pinID.filter(function(element) {
-                                        return element === url[3];
-                                    }).length > 0) {
-                                    response.end(JSON.Stringify(arduino.digitalRead(url[3]))); // send device ID, pin ID
-                                } else {
-                                    response.end('Error: Pin ID not found');
-                                }
-                            } else {
-                                response.end(JSON.Stringify(arduino.pins)); // send device ID, pins
-                            }
-                    } else {
-                        response.end('Error: No device found with that ID'); // send error in device ID request
-                    }
-                } else {
-                    response.end(JSON.Stringify(deviceList)); // send array of devices and IDs 
-                }
-            } else {
-                response.end('error in request, must request in the format /device/deviceID/pin/pinID'); // send error in request
-            }
-        } else {
-            response.end('error in url'); // send error in url received
-        }
-    } else if (request.method === 'POST') {
-            var url = request.url.split('/').slice(1);
-            // var pos = LEDCommandIndex();
-            if (url.length === 5) {
-                if (url[0] === 'device') {
-                    if (deviceID.filter(function(element) {
-                            return element === url[1];
-                        }).length > 0) {
+                            console.log(arduino.pins);
+                        });
                         if (url[2] === 'pin') {
                             if (pinID.filter(function(element) {
                                     return element === url[3];
                                 }).length > 0) {
-                                if (url[5] === 'HIGH') {
-                                    // set url[4] to HIGH
-                                } else if (url[5] === 'LOW') {
-                                    // set url[4] to LOW
-                                }
-                            } else {
-                                response.end() // send error in request
+                                response.end(JSON.Stringify(arduino.digitalRead(url[3]))); // send device ID, pin ID
+                            } else response.end('Error: Pin ID not found');
+                        } else response.end(JSON.Stringify(arduino.pins)); // send device ID, pins
+                    } else response.end('Error: No device found with that ID'); // send error in device ID request
+                } else response.end(JSON.Stringify(deviceList)); // send array of devices and IDs 
+            } else response.end('error in request, must request in the format /device/deviceID/pin/pinID'); // send error in request
+        } else response.end('error in url'); // send error in url received
+    } else if (request.method === 'POST') {
+        var url = request.url.split('/').slice(1);
+        // var pos = LEDCommandIndex();
+        if (url.length === 5) {
+            if (url[0] === 'device') {
+                if (deviceID.filter(function(element) {
+                        return element === url[1];
+                    }).length > 0) {
+                    if (url[2] === 'pin') {
+                        if (pinID.filter(function(element) {
+                                return element === url[3];
+                            }).length > 0) {
+                            if (url[5] === 'HIGH') {
+                                // set url[4] to HIGH
+                            } else if (url[5] === 'LOW') {
+                                // set url[4] to LOW
                             }
-                        } else {
-                            response.end() // send error in request
-                        }
-                    } else {
-                        response.end() // send error in request
-                    }
-                } else {
-                    response.end() // send error in request
-                }
-            } else {
-                response.end() // send error in request
-            }
-        }
+                        } else response.end() // send error in request
+                    } else response.end() // send error in request
+                } else response.end() // send error in request
+            } else response.end() // send error in request
+        } else response.end() // send error in request
     }
+}
 
 
 
-    // function LEDCommandIndex(){
-    // 			if (url.indexOf('HIGH') !== -1) {
-    // 				return(url.indexOf('HIGH'));
-    // 			} else if (url.indexOf('LOW') !== -1) {
-    // 				return(url.indexOf('LOW'));
-    // 			} else {
-    // 				response.end() // no pin setting sent
-    // 			}
-    // 		}
+// function LEDCommandIndex(){
+//          if (url.indexOf('HIGH') !== -1) {
+//              return(url.indexOf('HIGH'));
+//          } else if (url.indexOf('LOW') !== -1) {
+//              return(url.indexOf('LOW'));
+//          } else {
+//              response.end() // no pin setting sent
+//          }
+//      }
