@@ -1,0 +1,3 @@
+[submodule "firmata_arduino/xbee-arduino"]
+	path = firmata_arduino/xbee-arduino
+	url = https://github.com/andrewrapp/xbee-arduino.git

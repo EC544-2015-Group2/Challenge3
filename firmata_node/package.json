@@ -1,0 +1,23 @@
+{
+  "name": "challenge3",
+  "version": "1.0.0",
+  "description": "Challenge 3 of the EC544 course in Fall 2015 at Boston University",
+  "main": "tcpServer.js",
+  "scripts": {
+    "test": "tcpClient.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/EC544-2015-Group2/Challenge3.git"
+  },
+  "author": "ghirlekar",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/EC544-2015-Group2/Challenge3/issues"
+  },
+  "homepage": "https://github.com/EC544-2015-Group2/Challenge3#readme",
+  "dependencies": {
+    "firmata": "^0.5.5",
+    "xbee-api": "^0.3.12"
+  }
+}
