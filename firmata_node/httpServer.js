@@ -15,23 +15,23 @@ var serialOptions = {
     parser: xbeeAPI.rawParser()
 };
 
-var deviceList = [];
+var deviceList = ['a','b','c','d','e'];
 
-Serial = new serialPort.SerialPort(process.argv[2], serialOptions, true, function() {
-    console.log('Opened serial port');
-    Serial.flush();
+// Serial = new serialPort.SerialPort(process.argv[2], serialOptions, true, function() {
+//     console.log('Opened serial port');
+//     Serial.flush();
 
-    xbeeAPI.on('frame_object', function(frame) {
-        if (frame.type === xbee_api.constants.FRAME_TYPE.NODE_IDENTIFICATION)
-            deviceList.push(frame.remote64);
-    });
+//     xbeeAPI.on('frame_object', function(frame) {
+//         if (frame.type === xbee_api.constants.FRAME_TYPE.NODE_IDENTIFICATION)
+//             deviceList.push(frame.remote64);
+//     });
     var server = http.createServer(httpRequestHandler);
 
     server.listen(PORT, function() {
         console.log("Server listening on: http://localhost:%s", PORT);
     });
 
-})
+// })
 
 
 
@@ -39,6 +39,7 @@ function httpRequestHandler(request, response) {
     console.log(request);
     if (request.method === 'GET') {
         var url = request.url.split('/').slice(1);
+        console.log('get request received');
         if (url.length > 0) {
             if (url[0] === 'device') {
                 if (url.length > 1) {
