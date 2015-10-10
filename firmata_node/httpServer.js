@@ -46,20 +46,22 @@ function httpRequestHandler(request, response) {
 						return element === url[1];
 					}).length > 0) {
 						var xbeeStream = XbeeApiStream(url[1], Serial, xbeeAPI);
+						var arduino = new firmata.Board(xbeeStream, function() {
+							console.log(arduino.pins);
 						if (url[2] === 'pin') {
 							if (pinID.filter(function (element){
 								return element === url [3];
 							}).length > 0) {
-								response.end('XXXXXpin ID') // send device ID, pin ID
+								response.end(JSON.Stringify('XXXXXpin ID')) // send device ID, pin ID
 							}
 						} else {
-							response.end('XXXXXlist of pins') // send device ID, pins
+							response.end(JSON.Stringify(arduino.pins)) // send device ID, pins
 						}
 					} else {
 						response.end('Error: No device found with that ID') // send error in device ID request
 					}
 				} else {
-					response.end('XXXXXlist of devices','utf8'); // send array of devices and IDs 
+					response.end(JSON.Stringify(deviceList)); // send array of devices and IDs 
 				}
 			} else {
 				response.end('error in request, must request in the format /device/deviceID/pin/pinID') // send error in request
