@@ -52,22 +52,24 @@ function httpRequestHandler(request, response) {
 							if (pinID.filter(function (element){
 								return element === url [3];
 							}).length > 0) {
-								response.end(JSON.Stringify('XXXXXpin ID')) // send device ID, pin ID
+								response.end(JSON.Stringify(arduino.digitalRead(url[3]))); // send device ID, pin ID
+							} else {
+								response.end('Error: Pin ID not found')
 							}
 						} else {
-							response.end(JSON.Stringify(arduino.pins)) // send device ID, pins
+							response.end(JSON.Stringify(arduino.pins)); // send device ID, pins
 						}
 					} else {
-						response.end('Error: No device found with that ID') // send error in device ID request
+						response.end('Error: No device found with that ID'); // send error in device ID request
 					}
 				} else {
 					response.end(JSON.Stringify(deviceList)); // send array of devices and IDs 
 				}
 			} else {
-				response.end('error in request, must request in the format /device/deviceID/pin/pinID') // send error in request
+				response.end('error in request, must request in the format /device/deviceID/pin/pinID'); // send error in request
 			}
 		} else { 
-			response.end('error in url') // send error in url received
+			response.end('error in url'); // send error in url received
 		}
 	} else if (request.method === 'POST'){
 		var url = request.url.split('/').slice(1);
