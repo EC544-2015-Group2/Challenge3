@@ -17,9 +17,8 @@ var serialOptions = {
 
 var deviceList = [];
 
-Serial = new serialPort.SerialPort(process.argv[2], serialOptions, true, function() {
+var Serial = new serialPort.SerialPort(process.argv[2], serialOptions, true, function() {
     console.log('Opened serial port');
-    Serial.flush();
 
     xbeeAPI.on('frame_object', function(frame) {
         if (frame.type === xbee_api.constants.FRAME_TYPE.NODE_IDENTIFICATION)
@@ -32,6 +31,7 @@ Serial = new serialPort.SerialPort(process.argv[2], serialOptions, true, functio
     });
 
 })
+    //Serial.flush();
 
 
 
