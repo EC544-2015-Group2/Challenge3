@@ -4,16 +4,16 @@ var http = require('http'),
     serialPort = require('serialport'),
     XbeeApiStream = require('./XbeeApiStream.js');
 
-const PORT = 80;
+const PORT = 8080;
 
-xbeeAPI = new xbee_api.XBeeAPI({
-    api_mode: 2
-});
+// xbeeAPI = new xbee_api.XBeeAPI({
+//     api_mode: 2
+// });
 
-var serialOptions = {
-    baudrate: 9600,
-    parser: xbeeAPI.rawParser()
-};
+// var serialOptions = {
+//     baudrate: 9600,
+//     parser: xbeeAPI.rawParser()
+// };
 
 var deviceList = ['a','b','c','d','e'];
 
@@ -36,9 +36,10 @@ var deviceList = ['a','b','c','d','e'];
 
 
 function httpRequestHandler(request, response) {
-    console.log(request);
+    console.log('callback used');
     if (request.method === 'GET') {
         var url = request.url.split('/').slice(1);
+        console.log(request.url);
         console.log('get request received');
         if (url.length > 0) {
             if (url[0] === 'device') {
@@ -58,7 +59,7 @@ function httpRequestHandler(request, response) {
                             } else response.end('Error: Pin ID not found');
                         } else response.end(JSON.Stringify(arduino.pins)); // send device ID, pins
                     } else response.end('Error: No device found with that ID'); // send error in device ID request
-                } else response.end(JSON.Stringify(deviceList)); // send array of devices and IDs 
+                } else response.end(JSON.stringify(deviceList)); // send array of devices and IDs 
             } else response.end('error in request, must request in the format /device/deviceID/pin/pinID'); // send error in request
         } else response.end('error in url'); // send error in url received
     } else if (request.method === 'POST') {

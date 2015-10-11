@@ -1,21 +1,23 @@
 var http = require('http');
 var options = {
-	port: 80,
-	method: 'GET',
-	path: '/device'
+    port: 8080,
+    method: 'GET',
+    path: '/device'
 };
 
+console.log('the client is starting')
 callback = function(response) {
-	var str = '';
+    console.log('client callback being used')
+    var str = '';
 
-	response.on('data', function(chunk) {
-		str += chunk;
-		console.log('data received')
-	});
+    response.on('data', function(chunk) {
+        str += chunk;
+        console.log('data received')
+    });
 
-	response.on('end', function () {
-		console.log(str);
-	});
+    response.on('end', function() {
+        console.log(str);
+    });
 }
 
 http.request(options, callback).end();
