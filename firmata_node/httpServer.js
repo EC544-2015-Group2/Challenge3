@@ -17,7 +17,7 @@ var serialOptions = {
 
 var deviceList = [];
 
-Serial = new serialPort.SerialPort(process.argv[2], serialOptions, true, function() {
+var Serial = new serialPort.SerialPort(process.argv[2], serialOptions, true, function() {
     console.log('Opened serial port');
     Serial.flush();
 
@@ -31,7 +31,7 @@ Serial = new serialPort.SerialPort(process.argv[2], serialOptions, true, functio
         console.log("Server listening on: http://localhost:%s", PORT);
     });
 
-})
+});
 
 
 
