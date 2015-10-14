@@ -2,7 +2,7 @@ var http = require('http');
 var options = {
     port: 8080,
     method: 'GET',
-    path: '/device/0013a20040a03e02'
+    path: '/device/0013a20040a03e02/pin/7'
 };
 
 console.log('the client is starting')

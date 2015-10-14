@@ -10,6 +10,7 @@ function XbeeApiStream(deviceId, serialPort, xbeeApi) {
     Duplex.call(this);
 
     this.xbeeApi.on('frame_object', function(frame) {
+        // console.log(frame)
         if (frame.type === xbee_api.constants.FRAME_TYPE.ZIGBEE_RECEIVE_PACKET && frame.remote64 === this.deviceId) {
             this.push(frame.data);
             console.log('Received: ');
