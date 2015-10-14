@@ -7,19 +7,20 @@ function XbeeApiStream(deviceId, serialPort, xbeeApi) {
     this.deviceId = deviceId;
     this.serialPort = serialPort;
     this.xbeeApi = xbeeApi;
-    Duplex.call(this);
-
-    this.xbeeApi.on('frame_object', function(frame) {
+    this.xbeeListener = function(frame) {
         // console.log(frame)
         if (frame.type === xbee_api.constants.FRAME_TYPE.ZIGBEE_RECEIVE_PACKET && frame.remote64 === this.deviceId) {
             this.push(frame.data);
             console.log('Received: ');
             console.log(frame.data);
         }
-    }.bind(this));
+    }.bind(this)
+    Duplex.call(this);
+
+    this.xbeeApi.on('frame_object', xbeeListener);
 }
 
-XbeeApiStream.prototype._read = function(){
+XbeeApiStream.prototype._read = function() {
     // Here just to satisfy the requirement of extending Duplex. Doesn't need to do anything at all.
 }
 
@@ -37,6 +38,10 @@ XbeeApiStream.prototype._write = function(chunk, encoding, callback) {
             else this.serialPort.drain(callback);
     }.bind(this));
     return true;
+}
+
+XbeeApiStream.prototype.detachEventHandlers = function() {
+    this.xbeeApi.removeListener('frame_object', this.xbeeListener);
 }
 
 module.exports = XbeeApiStream;

@@ -58,6 +58,7 @@ function httpRequestHandler(request, response) {
             } else response.end(JSON.stringify(deviceList)); // send array of devices and IDs 
         } else response.end('error in request, must request in the format /device/deviceID/pin/pinID'); // send error in request
     } else response.end('error in url'); // send error in url received
+    if (xbeeStream) xbeeStream.detachEventHandlers();
 }
 
 function setPin(arduino, pin, value) {
