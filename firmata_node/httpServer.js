@@ -58,30 +58,32 @@ function httpRequestHandler(request, response) {
                     }
                     busyDevices.push(url[1]);
                     var xbeeStream = new XbeeApiStream(url[1], Serial, xbeeAPI);
+                    setTimeout(function() {
+                        if (!response.finished) {
+                            response.end('ERROR: Device communication timed out. Try again.');
+                            if (xbeeStream) xbeeStream.detachEventHandlers();
+                            busyDevices = busyDevices.filter(function(deviceID) {
+                                return deviceID !== url[1];
+                            });
+                            if(arduino)	arduino = null;
+                            if(xbeeStream) xbeeStream = null;
+                        }
+                    }, 20000);
                     var arduino = new firmata.Board(xbeeStream, function() {
-                        setTimeout(function() {
-                            if (!response.finished) {
-                                response.end('ERROR: Device communication timed out. Try again.');
-                                if (xbeeStream) xbeeStream.detachEventHandlers();
-                                busyDevices.filter(function(deviceID) {
-                                    return deviceID !== url[1];
-                                });
-                            }
-                        }, 10000);
                         if (url[2] === 'pin') {
                             if (request.method === 'GET')
                                 response.end(JSON.stringify(getPin(arduino, url[3])));
                             else if (request.method === 'POST') response.end(setPin(arduino, url[3], url[4]));
                         } else response.end(JSON.stringify(arduino.pins)); // send device ID, pins
+                        if (xbeeStream) xbeeStream.detachEventHandlers();
+                        busyDevices = busyDevices.filter(function(deviceID) {
+                            return deviceID !== url[1];
+                        });
                     });
                 } else response.end('Error: No device found with that ID'); // send error in device ID request
             } else response.end(JSON.stringify(deviceList)); // send array of devices and IDs 
         } else response.end('error in request, must request in the format /device/deviceID/pin/pinID'); // send error in request
     } else response.end('error in url'); // send error in url received
-    if (xbeeStream) xbeeStream.detachEventHandlers();
-    busyDevices.filter(function(deviceID) {
-        return deviceID !== url[1];
-    });
 }
 
 function setPin(arduino, pin, value) {
