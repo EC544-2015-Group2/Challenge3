@@ -15,7 +15,7 @@ function XbeeApiStream(deviceId, serialPort, xbeeApi) {
             this.push(frame.data);
             console.log('Received: ');
             console.log(frame.data);
-        } else console.log('evaluating as false');
+        }
     }.bind(this));
 }
 
