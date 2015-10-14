@@ -1,6 +1,7 @@
 var http = require('http');
 var options = {
     port: 8080,
+    host: 'ec544-group2.ddns.net',
     method: 'POST',
     path: '/device/0013a20040a03e02/pin/13/LOW'
 };

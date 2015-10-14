@@ -2,7 +2,8 @@ var http = require('http');
 var options = {
     port: 8080,
     method: 'GET',
-    path: '/device/0013a20040a03e02/pin/7'
+    host: 'ec544-group2.ddns.net',
+    path: '/device/0013a20040a03e02/pin/A3'
 };
 
 console.log('the client is starting')

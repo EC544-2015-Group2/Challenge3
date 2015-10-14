@@ -38,92 +38,60 @@ var Serial = new serialPort.SerialPort(process.argv[2], serialOptions, true, fun
 
 
 function httpRequestHandler(request, response) {
-    //TEST Variables 
-    var arduinopins = ['A0', 'A1', '7', '9']; //TEST
-    var pinStatus = 'HIGH' //TEST
-
-    // console.log('callback used');
-    if (request.method === 'GET') {
-        console.log('GET request received')
-            // deviceList = ['0xFFFFFFFFFFFFFFFF']; //TEST 
-        console.log(deviceList)
-        var url = request.url.split('/').slice(1);
-        console.log(request.url);
-        console.log('get request received');
-        if (url.length > 0) {
-            if (url[0] === 'device') {
-                if (url.length > 1) {
-                    if (deviceList.filter(function(element) {
-                            return element === url[1];
-                        }).length > 0) {
-                        var xbeeStream = new XbeeApiStream(url[1], Serial, xbeeAPI);
-                        var arduino = new firmata.Board(xbeeStream, function() {
-
-                            if (url[2] === 'pin') {
-                                var pinID = arduino.pins;
-                                if (pinID.filter(function(element) {
-                                        return element === url[3]; //problem here with teh format returned by arduino.pins
-                                    }).length > 0) {
-                                    // response.end(JSON.stringify(PinStatus))
-                                    response.end(JSON.stringify(arduino.digitalRead(url[3]))); // send device ID, pin ID
-                                } else response.end('Error: Pin ID not found');
-                                // } else response.end(JSON.stringify(arduinopins));
-                            } else response.end(JSON.stringify(arduino.pins)); // send device ID, pins
-                        });
-                    } else response.end('Error: No device found with that ID'); // send error in device ID request
-                } else response.end(JSON.stringify(deviceList)); // send array of devices and IDs 
-            } else response.end('error in request, must request in the format /device/deviceID/pin/pinID'); // send error in request
-        } else response.end('error in url'); // send error in url received
-    } else if (request.method === 'POST') {
-        console.log('POST request received');
-        var url = request.url.split('/').slice(1);
-        console.log(url);
-        // var pos = LEDCommandIndex();
-        if (url.length === 5) {
-            if (url[0] === 'device') {
+    var url = request.url.split('/').slice(1);
+    console.log(request.url);
+    if (url.length > 0) {
+        if (url[0] === 'device') {
+            if (url.length > 1) {
                 if (deviceList.filter(function(element) {
                         return element === url[1];
                     }).length > 0) {
                     var xbeeStream = new XbeeApiStream(url[1], Serial, xbeeAPI);
                     var arduino = new firmata.Board(xbeeStream, function() {
                         if (url[2] === 'pin') {
-                            // var pinID = arduino.pins;
-                            if (url[3].length > 0) {
-                                // if (pinID.filter(function(element) {
-                                // return element === url[3];
-                                // var xbeeStream = XbeeApiStream(url[1], Serial, xbeeAPI);
-                                // var arduino = new firmata.Board(xbeeStream, function() {
-                                //     console.log('Accessed board pins, attempting to write...')
-                                // });
-                                // }).length > 0) {
-                                console.log('second last if statement');
-                                // console.log(frame);
-                                if (url[4] === 'HIGH') {
-                                    arduino.pinMode(url[3], arduino.MODES.OUTPUT);
-                                    arduino.digitalWrite(url[3], arduino.HIGH);
-                                    console.log('set pin ' + url[3] + 'to HIGH');
-                                } else if (url[4] === 'LOW') {
-                                    arduino.pinMode(url[3], arduino.MODES.OUTPUT);
-                                    arduino.digitalWrite(url[3], arduino.LOW);
-                                    console.log('set pin ' + url[3] + 'to LOW');
-                                } else response.end('Error: Please specify HIGH or LOW')
-                            } else response.end('Error: url should be of format /device/deviceID/pin/pinID/HIGH or LOW (second last)') // send error in request
-                        } else response.end('Error: url should be of format /device/deviceID/pin/pinID/HIGH or LOW') // send error in request
+                            if (request.method === 'GET')
+                                response.end(JSON.stringify(getPin(arduino, url[3])));
+                            else if (request.method === 'POST') response.end(setPin(arduino, url[3], url[4]));
+                        } else response.end(JSON.stringify(arduino.pins)); // send device ID, pins
                     });
-                } else response.end('Error: url should be of format /device/deviceID/pin/pinID/HIGH or LOW') // send error in request
-            } else response.end('Error: url should be of format /device/deviceID/pin/pinID/HIGH or LOW') // send error in request
-        } else response.end('Error: url should be of format /device/deviceID/pin/pinID/HIGH or LOW') // send error in request
+                } else response.end('Error: No device found with that ID'); // send error in device ID request
+            } else response.end(JSON.stringify(deviceList)); // send array of devices and IDs 
+        } else response.end('error in request, must request in the format /device/deviceID/pin/pinID'); // send error in request
+    } else response.end('error in url'); // send error in url received
+}
+
+function setPin(arduino, pin, value) {
+    if (pin && value) {
+        if (value === 'HIGH') value = arduino.HIGH;
+        else if (value === 'LOW') value = arduino.LOW;
+        arduino.pinMode(pin, arduino.MODES.OUTPUT);
+        arduino.digitalWrite(pin, value);
     }
 }
 
+function getPin(arduino, pin) {
+    if (pin) {
+        var _isAnalog = false;
+        if (pin[0] === 'A') {
+            _isAnalog = true;
+            pin = pin.slice(1);
+        }
+        pin = parseInt(pin);
+        if (_isAnalog) {
+            var analogPins = arduino.pins.filter(getAnalogPins);
+            if (pin < analogPins.length) return analogPins[pin];
+        } else {
+            var digitalPins = arduino.pins.filter(getDigitalPins);
+            if (pin < digitalPins.length) return digitalPins[pin];
+        }
+    }
+    return 'ERROR: No matching pin found';
+}
 
+function getDigitalPins(item) {
+    return item.analogChannel === 127;
+}
 
-// function LEDCommandIndex(){
-//          if (url.indexOf('HIGH') !== -1) {
-//              return(url.indexOf('HIGH'));
-//          } else if (url.indexOf('LOW') !== -1) {
-//              return(url.indexOf('LOW'));
-//          } else {
-//              response.end() // no pin setting sent
-//          }
-//      }
+function getAnalogPins(item) {
+    return item.analogChannel !== 127;
+}
