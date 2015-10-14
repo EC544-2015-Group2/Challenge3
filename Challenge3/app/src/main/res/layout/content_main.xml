@@ -23,7 +23,8 @@
                 android:layout_height="wrap_content"
                 android:layout_below="@+id/textView"
                 android:layout_alignParentLeft="true"
-                android:layout_alignParentStart="true"></Spinner>
+                android:layout_alignParentStart="true"
+                ></Spinner>
 
         <TextView android:id="@+id/pin"
             android:text="PIN ID"
@@ -39,6 +40,27 @@
             android:layout_alignParentLeft="true"
             android:layout_alignParentStart="true"></Spinner>
 
+        <TextView android:text="Set Status"
+                  android:layout_width="wrap_content"
+                  android:layout_height="wrap_content"/>
+
+        <RadioGroup xmlns:android="http://schemas.android.com/apk/res/android"
+            android:id="@+id/radio_status"
+            android:layout_width="fill_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal">
+            <RadioButton android:id="@+id/radio_high"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@string/status_high"
+                />
+            <RadioButton android:id="@+id/radio_low"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@string/status_low"
+                />
+        </RadioGroup>
+
         <Button
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
@@ -48,7 +70,8 @@
             android:layout_alignParentLeft="true"
             android:layout_alignParentStart="true"
             android:layout_alignRight="@+id/pin_Id"
-            android:layout_alignEnd="@+id/pin_Id" />
+            android:layout_alignEnd="@+id/pin_Id"
+            />
 
     </TableLayout>
 
