@@ -14,10 +14,10 @@ function XbeeApiStream(deviceId, serialPort, xbeeApi) {
             console.log('Received: ');
             console.log(frame.data);
         }
-    }.bind(this)
+    };
     Duplex.call(this);
 
-    this.xbeeApi.on('frame_object', xbeeListener);
+    this.xbeeApi.on('frame_object', this.xbeeListener.bind(this));
 }
 
 XbeeApiStream.prototype._read = function() {
