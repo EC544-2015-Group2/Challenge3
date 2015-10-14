@@ -16,6 +16,7 @@ var serialOptions = {
 };
 
 var deviceList = [];
+var busyDevices = [];
 
 var Serial = new serialPort.SerialPort(process.argv[2], serialOptions, true, function() {
     console.log('Opened serial port');
@@ -23,7 +24,10 @@ var Serial = new serialPort.SerialPort(process.argv[2], serialOptions, true, fun
 
     xbeeAPI.on('frame_object', function(frame) {
         if (frame.type === xbee_api.constants.FRAME_TYPE.NODE_IDENTIFICATION) {
-            deviceList.push(frame.remote64);
+            if (deviceList.filter(function(item) {
+                    return item === frame.remote64;
+                }).length === 0)
+                deviceList.push(frame.remote64);
             console.log(frame);
         }
     });
@@ -46,8 +50,24 @@ function httpRequestHandler(request, response) {
                 if (deviceList.filter(function(element) {
                         return element === url[1];
                     }).length > 0) {
+                    if (busyDevices.filter(function(deviceID) {
+                            return deviceID === url[1];
+                        }).length > 0) {
+                        response.end('ERROR: Device is busy. Please try again soon.');
+                        return;
+                    }
+                    busyDevices.push(url[1]);
                     var xbeeStream = new XbeeApiStream(url[1], Serial, xbeeAPI);
                     var arduino = new firmata.Board(xbeeStream, function() {
+                        setTimeout(function() {
+                            if (!response.finished) {
+                                response.end('ERROR: Device communication timed out. Try again.');
+                                if (xbeeStream) xbeeStream.detachEventHandlers();
+                                busyDevices.filter(function(deviceID) {
+                                    return deviceID !== url[1];
+                                });
+                            }
+                        }, 10000);
                         if (url[2] === 'pin') {
                             if (request.method === 'GET')
                                 response.end(JSON.stringify(getPin(arduino, url[3])));
@@ -59,6 +79,9 @@ function httpRequestHandler(request, response) {
         } else response.end('error in request, must request in the format /device/deviceID/pin/pinID'); // send error in request
     } else response.end('error in url'); // send error in url received
     if (xbeeStream) xbeeStream.detachEventHandlers();
+    busyDevices.filter(function(deviceID) {
+        return deviceID !== url[1];
+    });
 }
 
 function setPin(arduino, pin, value) {
