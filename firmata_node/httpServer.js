@@ -36,8 +36,14 @@ Serial = new serialPort.SerialPort(process.argv[2], serialOptions, true, functio
 
 
 function httpRequestHandler(request, response) {
+    //TEST Variables 
+    var arduinopins = ['A0', 'A1', '7', '9']; //TEST
+    var pinStatus = 'HIGH' //TEST
+
     console.log('callback used');
     if (request.method === 'GET') {
+        // deviceList = ['0xFFFFFFFFFFFFFFFF']; //TEST 
+        console.log(deviceList)
         var url = request.url.split('/').slice(1);
         console.log(request.url);
         console.log('get request received');
@@ -46,18 +52,21 @@ function httpRequestHandler(request, response) {
                 if (url.length > 1) {
                     if (deviceList.filter(function(element) {
                             return element === url[1];
-                        }).length > 0) {
+                        }).length > 0) {                     
                         var xbeeStream = new XbeeApiStream(url[1], Serial, xbeeAPI);
                         var arduino = new firmata.Board(xbeeStream, function() {
-                            console.log(arduino.pins);
                         });
                         if (url[2] === 'pin') {
+                            var pinID = arduino.pins;
                             if (pinID.filter(function(element) {
                                     return element === url[3];
                                 }).length > 0) {
-                                response.end(JSON.stringify(arduino.digitalRead(url[3]))); // send device ID, pin ID
+                                response.end(JSON.stringify(PinStatus))
+                                // response.end(JSON.stringify(arduino.digitalRead(url[3]))); // send device ID, pin ID
                             } else response.end('Error: Pin ID not found');
+                        // } else response.end(JSON.stringify(arduinopins));
                         } else response.end(JSON.stringify(arduino.pins)); // send device ID, pins
+                        console.log(arduino.pins.toString())
                     } else response.end('Error: No device found with that ID'); // send error in device ID request
                 } else response.end(JSON.stringify(deviceList)); // send array of devices and IDs 
             } else response.end('error in request, must request in the format /device/deviceID/pin/pinID'); // send error in request
