@@ -22,9 +22,10 @@ Serial = new serialPort.SerialPort(process.argv[2], serialOptions, true, functio
     Serial.flush();
 
     xbeeAPI.on('frame_object', function(frame) {
-        if (frame.type === xbee_api.constants.FRAME_TYPE.NODE_IDENTIFICATION)
+        if (frame.type === xbee_api.constants.FRAME_TYPE.NODE_IDENTIFICATION){
             deviceList.push(frame.remote64);
-    });
+            console.log(frame);
+    }});
     var server = http.createServer(httpRequestHandler);
 
     server.listen(PORT, function() {
@@ -55,7 +56,7 @@ function httpRequestHandler(request, response) {
                         }).length > 0) {                     
                         var xbeeStream = new XbeeApiStream(url[1], Serial, xbeeAPI);
                         var arduino = new firmata.Board(xbeeStream, function() {
-                        });
+                        
                         if (url[2] === 'pin') {
                             var pinID = arduino.pins;
                             if (pinID.filter(function(element) {
@@ -66,7 +67,7 @@ function httpRequestHandler(request, response) {
                             } else response.end('Error: Pin ID not found');
                         // } else response.end(JSON.stringify(arduinopins));
                         } else response.end(JSON.stringify(arduino.pins)); // send device ID, pins
-                        console.log(arduino.pins.toString())
+                        });
                     } else response.end('Error: No device found with that ID'); // send error in device ID request
                 } else response.end(JSON.stringify(deviceList)); // send array of devices and IDs 
             } else response.end('error in request, must request in the format /device/deviceID/pin/pinID'); // send error in request
