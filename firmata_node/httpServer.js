@@ -22,11 +22,14 @@ var Serial = new serialPort.SerialPort(process.argv[2], serialOptions, true, fun
     Serial.flush();
 
     xbeeAPI.on('frame_object', function(frame) {
-        if (frame.type === xbee_api.constants.FRAME_TYPE.NODE_IDENTIFICATION)
+        if (frame.type === xbee_api.constants.FRAME_TYPE.NODE_IDENTIFICATION) {
+            if (deviceList[frame.remote64]) deviceList[frame.remote64].detachEventHandlers();
+
             var board = new firmata.Board(new XbeeApiStream(frame.remote64, Serial, xbeeAPI), function() {
                 deviceList[frame.remote64] = board;
                 console.log('New board added: ' + frame.remote64);
             });
+        }
     });
 
     http.createServer(httpRequestHandler).listen(PORT, function() {
