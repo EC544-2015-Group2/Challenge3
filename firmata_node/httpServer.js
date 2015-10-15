@@ -16,7 +16,6 @@ var serialOptions = {
 };
 
 var deviceList = [];
-var busyDevices = [];
 
 var Serial = new serialPort.SerialPort(process.argv[2], serialOptions, true, function() {
     console.log('Opened serial port');
@@ -24,19 +23,18 @@ var Serial = new serialPort.SerialPort(process.argv[2], serialOptions, true, fun
 
     xbeeAPI.on('frame_object', function(frame) {
         if (frame.type === xbee_api.constants.FRAME_TYPE.NODE_IDENTIFICATION) {
-            if (deviceList.filter(function(item) {
-                    return item === frame.remote64;
-                }).length === 0)
-                deviceList.push(frame.remote64);
-            console.log(frame);
+            if (deviceList[frame.remote64]) deviceList[frame.remote64].detachEventHandlers();
+
+            var board = new firmata.Board(new XbeeApiStream(frame.remote64, Serial, xbeeAPI), function() {
+                deviceList[frame.remote64] = board;
+                console.log('New board added: ' + frame.remote64);
+            });
         }
     });
-    var server = http.createServer(httpRequestHandler);
 
-    server.listen(PORT, function() {
-        console.log("Server listening on: http://localhost:%s", PORT);
+    http.createServer(httpRequestHandler).listen(PORT, function() {
+        console.log("Server listening on PORT: " + PORT);
     });
-
 });
 
 
@@ -47,41 +45,15 @@ function httpRequestHandler(request, response) {
     if (url.length > 0) {
         if (url[0] === 'device') {
             if (url.length > 1) {
-                if (deviceList.filter(function(element) {
-                        return element === url[1];
-                    }).length > 0) {
-                    if (busyDevices.filter(function(deviceID) {
-                            return deviceID === url[1];
-                        }).length > 0) {
-                        response.end('ERROR: Device is busy. Please try again soon.');
-                        return;
-                    }
-                    busyDevices.push(url[1]);
-                    var xbeeStream = new XbeeApiStream(url[1], Serial, xbeeAPI);
-                    setTimeout(function() {
-                        if (!response.finished) {
-                            response.end('ERROR: Device communication timed out. Try again.');
-                            if (xbeeStream) xbeeStream.detachEventHandlers();
-                            busyDevices = busyDevices.filter(function(deviceID) {
-                                return deviceID !== url[1];
-                            });
-                            if(arduino)	arduino = null;
-                            if(xbeeStream) xbeeStream = null;
-                        }
-                    }, 20000);
-                    var arduino = new firmata.Board(xbeeStream, function() {
-                        if (url[2] === 'pin') {
-                            if (request.method === 'GET')
-                                response.end(JSON.stringify(getPin(arduino, url[3])));
-                            else if (request.method === 'POST') response.end(setPin(arduino, url[3], url[4]));
-                        } else response.end(JSON.stringify(arduino.pins)); // send device ID, pins
-                        if (xbeeStream) xbeeStream.detachEventHandlers();
-                        busyDevices = busyDevices.filter(function(deviceID) {
-                            return deviceID !== url[1];
-                        });
-                    });
+                if (deviceList[url[1]]) {
+                    var arduino = deviceList[url[1]];
+                    if (url[2] === 'pin') {
+                        if (request.method === 'GET')
+                            response.end(JSON.stringify(getPin(arduino, url[3])));
+                        else if (request.method === 'POST') response.end(setPin(arduino, url[3], url[4]));
+                    } else response.end(JSON.stringify(arduino.pins)); // send device ID, pins
                 } else response.end('Error: No device found with that ID'); // send error in device ID request
-            } else response.end(JSON.stringify(deviceList)); // send array of devices and IDs 
+            } else response.end(JSON.stringify(Object.keys(deviceList))); // send array of devices and IDs 
         } else response.end('error in request, must request in the format /device/deviceID/pin/pinID'); // send error in request
     } else response.end('error in url'); // send error in url received
 }
